@@ -4,6 +4,10 @@ extends KinematicBody2D
 #var velocity = Vector2.ZERO
 var screen_size
 var speed = 100
+var velocity = Vector2.ZERO
+const MAX_SPEDD = 25
+const ACCELERATION = 150
+const FRICTION = 100
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -14,21 +18,16 @@ func _ready():
 #	pass
 
 func _physics_process(delta):
-	var velocity = Vector2.ZERO
-	if Input.is_action_pressed("move_right"):
-		velocity.x += 1
-	if Input.is_action_pressed("move_left"):
-		velocity.x -= 1
-	if Input.is_action_pressed("move_up"):
-		velocity.y -= 1
-	if Input.is_action_pressed("move_down"):
-		velocity.y += 1
-	if velocity.length() > 0:
-		velocity = velocity.normalized() * speed
-	#else:
-		#velocity.x = 0
-		#velocity.y = 0
-	#move_and_collide(velocity)
-	position += velocity * delta
-	position.x = clamp(position.x, 0, screen_size.x)
-	position.y = clamp(position.y, 0, screen_size.y)
+	var input_vector = Vector2.ZERO
+	input_vector.x = Input.get_action_strength("move_right") - Input.get_action_strength("move_left")
+	input_vector.y = Input.get_action_strength("move_down") - Input.get_action_strength("move_up")
+	input_vector = input_vector.normalized()
+	
+	if input_vector != Vector2.ZERO:
+		velocity = input_vector * ACCELERATION * delta
+		#velocity += input_vector * ACCELERATION * delta
+		#velocity = velocity.clamped(MAX_SPEDD * delta)
+	else:
+		velocity = velocity.move_toward(Vector2.ZERO, FRICTION * delta) 
+	#move_and_collide(velocity * delta)
+	move_and_collide(velocity)
